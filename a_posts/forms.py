@@ -4,7 +4,7 @@ from bs4 import BeautifulSoup
 import requests
 
 
-class PostForm(forms.ModelForm):
+class PostCreateForm(forms.ModelForm):
     class Meta:
         model = Post
         fields = ["url", "content"]
@@ -27,12 +27,18 @@ class PostForm(forms.ModelForm):
         }
 
     def save(self, commit=True):
-        instance = super(PostForm, self).save(commit=False)
+        instance = super(PostCreateForm, self).save(commit=False)
         url = self.cleaned_data.get("url")
         response = requests.get(url)
         if response.status_code == 200:
             source_code = BeautifulSoup(response.text, "html.parser")
-            image_meta = source_code.find('meta', attrs={'content': lambda x: x and x.startswith("https://live.staticflickr.com/")})
+            image_meta = source_code.find(
+                "meta",
+                attrs={
+                    "content": lambda x: x
+                    and x.startswith("https://live.staticflickr.com/")
+                },
+            )
             if image_meta:
                 instance.image = image_meta["content"]
             title_tag = source_code.find("h1", class_="photo-title")
@@ -44,3 +50,22 @@ class PostForm(forms.ModelForm):
         if commit:
             instance.save()
         return instance
+
+
+class PostEditForm(forms.ModelForm):
+    class Meta:
+        model = Post
+        fields = [
+            "content",
+        ]
+        labels = {
+            "content": "",
+        }
+        widgets = {
+            "content": forms.Textarea(
+                attrs={
+                    "rows": 3,
+                    "class": "form-control font1 text-4xl",
+                }
+            ),
+        }
