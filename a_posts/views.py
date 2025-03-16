@@ -4,6 +4,7 @@ from .forms import PostForm
 from django.views import View
 from django.urls import reverse_lazy
 from django.shortcuts import get_object_or_404
+from django.contrib import messages
 
 
 # Create your views here.
@@ -23,6 +24,7 @@ def post_delete_view(request, pk):
     post = get_object_or_404(Post, pk=pk)
     if request.method == "POST":
         post.delete()
+        messages.success(request, "Post deleted successfully")
         return redirect(reverse_lazy("home_view"))
     context = {"post": post}
     return render(request, "a_posts/post_delete.html", context)
